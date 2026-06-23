@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Profile</title>
+    <script>
+        // Load data from MongoDB when the page opens
+        window.onload = async function() {
+            try {
+                const response = await fetch('/get-profile');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data.name) {
+                        document.querySelector('#name').textContent = data.name;
+                        document.querySelector('#email').textContent = data.email;
+                        document.querySelector('#interests').textContent = data.interests;
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching initial profile:", error);
+            }
+        };
+
+        function editProfile() {
+            document.querySelector('.container').style.display = 'none';
+            document.querySelector('.container-edit').style.display = 'block';
+
+            const name = document.querySelector('#name').textContent;
+            document.querySelector('#input-name').value = name;
+
+            const email = document.querySelector('#email').textContent;
+            document.querySelector('#input-email').value = email;
+
+            const interests = document.querySelector('#interests').textContent;
+            document.querySelector('#input-interests').value = interests;
+        }
+
+        // Send updated profile values back to Node server
+        async function saveProfile() {
+            const payload = {
+                name: document.querySelector('#input-name').value,
+                email: document.querySelector('#input-email').value,
+                interests: document.querySelector('#input-interests').value
+            };
+
+            try {
+                const response = await fetch('/update-profile', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    const updatedData = await response.json();
+
+                    document.querySelector('#name').textContent = updatedData.name;
+                    document.querySelector('#email').textContent = updatedData.email;
+                    document.querySelector('#interests').textContent = updatedData.interests;
+
+                    document.querySelector('.container').style.display = 'block';
+                    document.querySelector('.container-edit').style.display = 'none';
+                }
+            } catch (error) {
+                console.error("Error saving profile:", error);
+                alert("Failed to save profile to database.");
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            margin: 50px auto;
+            max-width: 600px;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container, .container-edit {
+            background: #fff;
+            padding: 10px;
+        }
+
+        .container-edit {
+            display: none;
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        img {
+            width: 280px;
+            height: auto;
+            display: block;
+            margin-bottom: 25px;
+        }
+
+        h3 {
+            display: inline;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        hr {
+            border: 0;
+            border-top: 1px solid #ccc;
+            margin: 15px 0;
+        }
+
+        input {
+            font-size: 16px;
+            padding: 4px;
+            width: 250px;
+        }
+
+        .button {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            padding: 10px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 15px;
+        }
+
+        .button:hover {
+            background-color: #f7f7f7;
+        }
+    </style>
+</head>
+
+<body>
+    <div class='container'>
+        <h1 id='header'>User Profile</h1>
+        <img src='profile-picture' alt='Profile Picture'>
+        Name: <h3 id='name'>Anna Smith</h3>
+        <hr />
+        Email: <h3 id='email'>anna.smith@example.com</h3>
+        <hr />
+        Interests: <h3 id='interests'>coding</h3>
+        <hr />
+        <button class='button' onclick="editProfile()">Edit Profile</button>
+    </div>
+
+    <div class='container-edit'>
+        <h1 id='header'>User Profile</h1>
+        <img src='profile-picture' alt='Profile Picture'>
+        Name: <input id='input-name' type='text' />
+        <hr />
+        Email: <input id='input-email' type='email' />
+        <hr />
+        Interests: <input id='input-interests' type='text'>
+        <hr />
+        <button class='button' onclick="saveProfile()">Save Profile</button>
+    </div>
+</body>
+</html>
