@@ -1,102 +1,213 @@
 # 🚀 Dockerized Cloud-Native Profile Web Application
 
-A fully containerized, production-grade profile management web application built with **Node.js** and deployed on **Amazon Web Services (AWS)** using an automated **CI/CD** pipeline and **Infrastructure as Code (IaC)**. 
+A fully containerized, production-grade profile management web application built with **Node.js** and deployed on **Amazon Web Services (AWS)** using an automated **CI/CD pipeline** and **Infrastructure as Code (IaC)**.
 
-Originally built as a local multi-container Docker stack, **Version 2.0** completely re-engineers the infrastructure layout into a secure, isolated cloud environment.
+Originally built as a local multi-container Docker stack, **Version 2.0** re-engineers the infrastructure into a secure, isolated cloud environment.
 
 ---
 
-## 🏗️ Architecture Overview
+# 🏗️ Architecture Overview
 
+```text
 [ GitHub Actions ] --(Pushes Image)--> [ Amazon ECR ]
         |
-    (SSH Deploy)
-        |
+        | (SSH Deploy)
         v
  [ AWS Custom VPC ]
-     └── [ Public Subnet ]
-              └── [ EC2 Instance (Docker Engine) ] <───> [ Amazon DynamoDB ]
-              
-Key Technical Upgrades (v2.0):
-Infrastructure as Code: 100% of the AWS infrastructure (VPC, Subnets, Gateways, IAM Roles, ECR, EC2, DynamoDB) is declared and managed via Terraform.
+        |
+        └── [ Public Subnet ]
+                 |
+                 └── [ EC2 Instance (Docker Engine) ]
+                               |
+                               └── [ Amazon DynamoDB ]
+```
 
-Isolated Networking: Bypassed default AWS routing to construct a dedicated, custom VPC with a secure public subnet, custom route tables, and strict firewall security groups.
+## Key Technical Upgrades (v2.0)
 
-Serverless Data Layer: Migrated the backend storage architecture from a localized database container to a scalable, managed Amazon DynamoDB database.
+### Infrastructure as Code
 
-Least-Privilege Security: Utilized AWS IAM Instance Profiles to grant the EC2 runtime secure, programmatic access to AWS services without hardcoding static API credentials.
+100% of the AWS infrastructure (VPC, Subnets, Internet Gateway, Route Tables, Security Groups, IAM Roles, ECR, EC2, and DynamoDB) is provisioned and managed using Terraform.
 
-🛠️ Tech Stack & Tooling
-Frontend/Backend: Node.js, Express, HTML5, CSS3
+### Isolated Networking
 
-Containerization: Docker (Optimized Multi-stage Alpine builds)
+A dedicated custom VPC was designed from scratch, including a public subnet, custom route tables, and tightly controlled security group rules instead of relying on AWS default networking.
 
-Infrastructure Layer: Terraform (AWS Provider)
+### Serverless Data Layer
 
-Cloud Services (AWS): EC2, ECR, DynamoDB, VPC, IAM
+The application backend was migrated from a locally hosted database container to Amazon DynamoDB, providing managed scalability and high availability.
 
-CI/CD Automation: GitHub Actions (Appleboy SSH engine, AWS Authentication hooks)
+### Least-Privilege Security
 
-📁 Repository Structure
-Plaintext
-├── .github/workflows/   # Automated GitHub Actions deployment CI/CD files
-├── app/                 # Node.js application core code context
-│   ├── server.js        # AWS DynamoDB client application logic
-│   ├── package.json     # Node engine dependency definitions
-│   └── index.html       # Web UI profile dashboard layout
-├── terraform/           # IaC declaration infrastructure modules
-│   ├── main.tf          # Core infrastructure topology (VPC, EC2, DB)
-│   ├── variables.tf     # Configurable project inputs
-│   └── outputs.tf       # Target runtime public endpoints
-├── Dockerfile           # Optimized light-footprint container manifest
-└── README.md            # System documentation matrix
-🤖 Automated CI/CD Pipeline Workflow
-Every code change pushed to the main branch triggers an automated deployment via GitHub Actions:
+AWS IAM Instance Profiles are used to grant the EC2 instance secure access to AWS services without storing long-term AWS credentials inside the application or server.
 
-Lint & Verify: Checks structural codebase integrity.
+---
 
-Build & Optimize: Packages the Node.js application into an isolated Docker container context.
+# 🛠️ Tech Stack
 
-Registry Delivery: Authenticates securely with AWS and pushes the tagged image asset directly to Amazon ECR.
+### Application Layer
 
-Remote CD Orchestration: Establishes a secure SSH connection to the EC2 target instance, logs into ECR, pulls down the latest container image tag, drops the old container instance, and boots the new application bundle flawlessly.
+* Node.js
+* Express.js
+* HTML5
+* CSS3
 
-🚀 Local & Sandbox Deployment Blueprint
-Prerequisite Checklist
-Installed local Terraform CLI Engine
+### Containerization
 
-Configured local AWS CLI profile credentials
+* Docker
+* Multi-stage Alpine Linux builds
 
-Installed Docker Desktop Runtime
+### Infrastructure
 
-1. Initialize & Spin Up Cloud Infrastructure
-Navigate to the terraform configuration workspace directory to initialize providers and provision resources:
+* Terraform
+* AWS Provider
 
-Bash
+### AWS Services
+
+* Amazon EC2
+* Amazon ECR
+* Amazon DynamoDB
+* Amazon VPC
+* AWS IAM
+
+### CI/CD
+
+* GitHub Actions
+* AWS Authentication Actions
+* Appleboy SSH Action
+
+---
+
+# 📁 Repository Structure
+
+```text
+.
+├── .github/
+│   └── workflows/
+│       └── deploy.yml          # GitHub Actions CI/CD pipeline
+
+├── app/
+│   ├── server.js              # Express application & DynamoDB logic
+│   ├── package.json           # Node.js dependencies
+│   └── index.html             # Frontend UI
+
+├── terraform/
+│   ├── main.tf                # Infrastructure resources
+│   ├── variables.tf           # Input variables
+│   └── outputs.tf             # Infrastructure outputs
+
+├── Dockerfile                 # Container image definition
+└── README.md                  # Project documentation
+```
+
+---
+
+# 🤖 Automated CI/CD Workflow
+
+Every push to the `main` branch automatically triggers the deployment pipeline:
+
+### 1. Lint & Validation
+
+Performs code quality checks and validates the project structure.
+
+### 2. Build & Package
+
+Builds the Docker image and packages the Node.js application into an isolated container.
+
+### 3. Push to Amazon ECR
+
+Authenticates with AWS and pushes the latest image to Amazon Elastic Container Registry (ECR).
+
+### 4. Remote Deployment
+
+GitHub Actions securely connects to the EC2 instance via SSH and:
+
+* Authenticates with ECR
+* Pulls the latest image
+* Stops and removes the previous container
+* Launches the updated application container
+
+This enables fully automated deployments with minimal downtime.
+
+---
+
+# 🚀 Deployment Guide
+
+## Prerequisites
+
+Ensure the following tools are installed and configured:
+
+* Terraform CLI
+* AWS CLI
+* Docker Desktop / Docker Engine
+* AWS Account with appropriate permissions
+
+---
+
+## 1. Provision Infrastructure
+
+Navigate to the Terraform directory and deploy the infrastructure:
+
+```bash
 cd terraform
 terraform init
 terraform apply -auto-approve
-Note the terminal execution output blocks for your unique target ec2_public_ip and container ecr_repository_url parameters.
+```
 
-2. Configure Automation Variables
-Map the infrastructure endpoints into your repository settings at Settings ──> Secrets and variables ──> Actions inside GitHub:
+After deployment completes, note the following outputs:
 
+* `ec2_public_ip`
+* `ecr_repository_url`
+
+---
+
+## 2. Configure GitHub Secrets
+
+Navigate to:
+
+**Repository → Settings → Secrets and Variables → Actions**
+
+Create the following secrets:
+
+```text
 AWS_ACCESS_KEY_ID
-
 AWS_SECRET_ACCESS_KEY
-
 EC2_PUBLIC_IP
-
-EC2_SSH_PRIVATE_KEY (Your .pem Keypair)
-
+EC2_SSH_PRIVATE_KEY
 ECR_REPOSITORY_URL
+```
 
-3. Deploy
-Push a code correction or manually trigger the GitHub workflow runner action to see the environment build out live across the network pipeline!
+---
 
-🧹 Teardown Protocol
-To easily destroy all live cloud resources and avoid unnecessary charges, run the following command within the Terraform directory:
+## 3. Deploy the Application
 
-Bash
+Push changes to the `main` branch or manually trigger the GitHub Actions workflow.
+
+The pipeline will:
+
+1. Build the Docker image
+2. Push it to Amazon ECR
+3. Connect to EC2
+4. Pull the latest image
+5. Restart the containerized application
+
+---
+
+# 🧹 Infrastructure Cleanup
+
+To remove all provisioned AWS resources and prevent ongoing charges:
+
+```bash
 cd terraform
 terraform destroy -auto-approve
+```
+
+This command deletes all infrastructure managed by Terraform, including:
+
+* EC2 Instance
+* ECR Repository
+* DynamoDB Table
+* IAM Roles
+* Security Groups
+* Route Tables
+* Internet Gateway
+* VPC and Subnets
