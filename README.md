@@ -1,4 +1,4 @@
-# Profile Card Docker App
+# Dockerized-profile-app
 
 A containerized profile management app built with Node.js and MongoDB.
 Displays user profile data with image and allows real-time updates.
