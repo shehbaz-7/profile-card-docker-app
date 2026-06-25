@@ -119,7 +119,7 @@ resource "aws_security_group" "app_sg" {
 
 # EC2 Instance — runs your Docker container
 resource "aws_instance" "app" {
-  ami                    = "ami-0f58b397bc5c1f2e8" # Amazon Linux 2 ap-south-2
+  ami                    = "ami-01f3f4b95d125a9af" # Amazon Linux 2 ap-south-2
   instance_type          = var.instance_type
   iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
   vpc_security_group_ids = [aws_security_group.app_sg.id]
